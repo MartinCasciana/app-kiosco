@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kiosco Precios</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 24px; max-width: 980px; }
+    h1 { margin: 0 0 6px; }
+    .muted { color:#666; margin: 0 0 18px; }
+    form { display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:10px; align-items:end; }
+    input, select, button { padding:10px; border:1px solid #ccc; border-radius:10px; }
+    button { cursor:pointer; font-weight:600; }
+    table { width:100%; border-collapse: collapse; margin-top: 18px; }
+    th, td { padding:10px; border-bottom:1px solid #eee; text-align:left; }
+    .right { text-align:right; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; background:#f3f3f3; }
+    .danger { background:#ffecec; border:1px solid #ffbcbc; }
+    .small { font-size: 12px; color:#666; }
+  </style>
+</head>
+<body>
+  <h1>🧾 Kiosco Precios</h1>
+  <p class="muted">Venta automática según margen por categoría.</p>
+
+  <!-- FORMULARIO -->
+  <form method="post" action="/add">
+    <div>
+      <label>Producto</label><br>
+      <input name="name" placeholder="Ej: Coca 2.25L" required>
+    </div>
+
+    <div>
+      <label>Categoría</label><br>
+      <select name="category" required>
+        {% for c in categories %}
+          <option value="{{ c }}">
+            {{ c }} ({{ (category_margins[c] * 100) | round(0) }}%)
+          </option>
+        {% endfor %}
+      </select>
+      <div class="small">El % se aplica automático.</div>
+    </div>
+
+    <div>
+      <label>Compra</label><br>
+      <input name="cost" type="number" step="0.01" min="0" placeholder="0.00" required>
+      <div class="small" id="previewVenta">
+        Venta estimada: —
+      </div>
+    </div>
+
+    <div>
+      <button type="submit">Agregar</button>
+    </div>
+  </form>
+
+  <!-- LISTADO -->
+  <table>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Categoría</th>
+        <th class="right">Compra</th>
+        <th class="right">Margen</th>
+        <th class="right">Venta</th>
+        <th class="right">Ganancia</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr>
+        <td>{{ p["name"] }}</td>
+
+        <td>
+          <span class="pill">{{ p["category"] }}</span>
+        </td>
+
+        <td class="right">{{ "%.2f"|format(p["cost"]) }}</td>
+
+        <td class="right">
+          {% set m = category_margins.get(p["category"], 0.40) %}
+          {{ (m * 100) | round(0) }}%
+        </td>
+
+        <td class="right">{{ "%.2f"|format(p["sale"]) }}</td>
+
+        <td class="right">{{ "%.2f"|format(p["sale"] - p["cost"]) }}</td>
+
+        <td class="right">
+          <form method="post" action="/delete/{{ p['id'] }}" style="margin:0;">
+            <button class="danger" type="submit">Borrar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+
+      {% if not products %}
+      <tr>
+        <td colspan="7" class="muted">No hay productos todavía.</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+    <script>
+    const costInput = document.querySelector('input[name="cost"]');
+    const categorySelect = document.querySelector('select[name="category"]');
+    const preview = document.getElementById('previewVenta');
+
+    const categoryMargins = {{ category_margins | tojson }};
+
+    function actualizarPreview() {
+      const costo = parseFloat(costInput.value);
+      const categoria = categorySelect.value;
+      const margen = categoryMargins[categoria];
+
+      if (!costo || !margen) {
+        preview.textContent = "Venta estimada: —";
+        return;
+      }
+
+      const ventaSinRedondeo = costo * (1 + margen);
+      const paso = 10;
+      const venta = Math.ceil(ventaSinRedondeo / paso) * paso;
+      preview.textContent =
+        `Venta estimada: $${venta.toFixed(2)} (${Math.round(margen * 100)}%)`;
+    }
+
+    costInput.addEventListener('input', actualizarPreview);
+    categorySelect.addEventListener('change', actualizarPreview);
+  </script>
+
+</body>
+</html>
