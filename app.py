@@ -32,20 +32,37 @@ def redondear_precio(precio: float, paso: int = 10) -> float:
 
 @app.get("/")
 def index():
-        # Leemos productos de la base
+    # 1) Leer filtros desde la URL (query string)
+    q = (request.args.get("q") or "").strip()
+    cat = (request.args.get("cat") or "").strip()
+
+    # 2) Construir consulta SQL dinámica y segura (con parámetros)
+    sql = "SELECT * FROM products WHERE 1=1"
+    params = []
+
+    if q:
+        sql += " AND name LIKE ?"
+        params.append(f"%{q}%")
+
+    if cat and cat in CATEGORY_MARGINS:
+        sql += " AND category = ?"
+        params.append(cat)
+
+    sql += " ORDER BY id DESC"
+
+    # 3) Ejecutar consulta
     with get_conn() as conn:
-        productos = conn.execute(
-             "SELECT * FROM products ORDER BY id DESC"
-        ).fetchall()
-    
-    # Lista de categorías para el <select> del HTML
+        productos = conn.execute(sql, params).fetchall()
+
     categorias = list(CATEGORY_MARGINS.keys())
 
     return render_template(
         "index.html",
         products=productos,
         categories=categorias,
-        category_margins=CATEGORY_MARGINS
+        category_margins=CATEGORY_MARGINS,
+        q=q,
+        cat=cat
     )
 
 @app.post("/add")
