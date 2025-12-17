@@ -56,6 +56,31 @@
   </form>
 
   <!-- LISTADO -->
+  <hr style="margin:18px 0;">
+
+  <form method="get" action="/" style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:10px; align-items:end;">
+    <div>
+      <label>Buscar</label><br>
+      <input name="q" placeholder="Ej: coca, marlboro, queso..." value="{{ q or '' }}">
+    </div>
+
+    <div>
+      <label>Categoría</label><br>
+      <select name="cat">
+        <option value="">Todas</option>
+        {% for c in categories %}
+          <option value="{{ c }}" {% if cat == c %}selected{% endif %}>
+            {{ c }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <button type="submit">Aplicar</button>
+    </div>
+  </form>
+
   <table>
     <thead>
       <tr>
