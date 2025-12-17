@@ -55,6 +55,11 @@
     </div>
   </form>
 
+  <p class="small">
+  Showing {{ products | length }} product{{ 's' if products|length != 1 else '' }}
+  </p>
+
+
   <!-- LISTADO -->
   <hr style="margin:18px 0;">
 
@@ -76,9 +81,14 @@
       </select>
     </div>
 
-    <div>
-      <button type="submit">Aplicar</button>
+    <div style="display:flex; gap:8px;">
+      <button type="submit">Apply</button>
+
+      <a href="/" style="text-decoration:none;">
+        <button type="button">Clear</button>
+      </a>
     </div>
+
   </form>
 
   <table>
