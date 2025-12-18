@@ -70,6 +70,8 @@ def add():
     nombre = request.form["name"].strip()
     categoria = request.form["category"].strip()
     precio_compra = float(request.form["cost"])
+    stock = int(request.form.get("stock", 0) or 0)
+    min_stock = int(request.form.get("min_stock", 0) or 0)
 
     # Si por algún motivo llega una categoría desconocida, usamos "Varios"
 
@@ -80,9 +82,8 @@ def add():
 
     with get_conn() as conn:
         conn.execute(
-        "INSERT INTO products (name, category, cost, sale) VALUES (?, ?, ?, ?)",
-        (nombre, categoria, precio_compra, precio_venta)
-
+            "INSERT INTO products (name, category, cost, sale, stock, min_stock) VALUES (?, ?, ?, ?, ?, ?)",
+            (nombre, categoria, precio_compra, precio_venta, stock, min_stock)
         )
         conn.commit()
     
