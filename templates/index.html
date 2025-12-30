@@ -8,7 +8,7 @@
     body { font-family: system-ui, Arial; margin: 24px; max-width: 980px; }
     h1 { margin: 0 0 6px; }
     .muted { color:#666; margin: 0 0 18px; }
-    form { display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:10px; align-items:end; }
+    form { display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; gap:10px; align-items:end; }
     input, select, button { padding:10px; border:1px solid #ccc; border-radius:10px; }
     button { cursor:pointer; font-weight:600; }
     table { width:100%; border-collapse: collapse; margin-top: 18px; }
@@ -49,6 +49,17 @@
         Venta estimada: —
       </div>
     </div>
+
+    <div>
+      <label>Stock</label><br>
+      <input name="stock" type="number" step="1" min="0" value="0" required>
+    </div>
+
+    <div>
+      <label>Min stock</label><br>
+      <input name="min_stock" type="number" step="1" min="0" value="0" required>
+    </div>
+
 
     <div>
       <button type="submit">Agregar</button>
@@ -98,6 +109,8 @@
         <th>Categoría</th>
         <th class="right">Compra</th>
         <th class="right">Margen</th>
+        <th class="right">Stock</th>
+        <th class="right">Min</th>
         <th class="right">Venta</th>
         <th class="right">Ganancia</th>
         <th></th>
@@ -105,38 +118,45 @@
     </thead>
     <tbody>
       {% for p in products %}
-      <tr>
-        <td>{{ p["name"] }}</td>
+        {% set low = (p["stock"] <= p["min_stock"]) %}
+        <tr {% if low %}style="background:#fff2f2;"{% endif %}>
+          <td>{{ p["name"] }}</td>
 
-        <td>
-          <span class="pill">{{ p["category"] }}</span>
-        </td>
+          <td>
+            <span class="pill">{{ p["category"] }}</span>
+            {% if low %}
+              <span class="pill" style="background:#ffd6d6; margin-left:6px;">LOW</span>
+            {% endif %}
+          </td>
 
-        <td class="right">{{ "%.2f"|format(p["cost"]) }}</td>
+          <td class="right">{{ "%.2f"|format(p["cost"]) }}</td>
 
-        <td class="right">
-          {% set m = category_margins.get(p["category"], 0.40) %}
-          {{ (m * 100) | round(0) }}%
-        </td>
+          <td class="right">
+            {% set m = category_margins.get(p["category"], 0.40) %}
+            {{ (m * 100) | round(0) }}%
+          </td>
 
-        <td class="right">{{ "%.2f"|format(p["sale"]) }}</td>
+          <td class="right">{{ p["stock"] }}</td>
+          <td class="right">{{ p["min_stock"] }}</td>
 
-        <td class="right">{{ "%.2f"|format(p["sale"] - p["cost"]) }}</td>
+          <td class="right">{{ "%.2f"|format(p["sale"]) }}</td>
+          <td class="right">{{ "%.2f"|format(p["sale"] - p["cost"]) }}</td>
 
-        <td class="right">
-          <form method="post" action="/delete/{{ p['id'] }}" style="margin:0;">
-            <button class="danger" type="submit">Borrar</button>
-          </form>
-        </td>
-      </tr>
+          <td class="right">
+            <form method="post" action="/delete/{{ p['id'] }}" style="margin:0;">
+              <button class="danger" type="submit">Borrar</button>
+            </form>
+          </td>
+        </tr>
       {% endfor %}
 
       {% if not products %}
-      <tr>
-        <td colspan="7" class="muted">No hay productos todavía.</td>
-      </tr>
+        <tr>
+          <td colspan="9" class="muted">No hay productos todavía.</td>
+        </tr>
       {% endif %}
     </tbody>
+
   </table>
     <script>
     const costInput = document.querySelector('input[name="cost"]');
