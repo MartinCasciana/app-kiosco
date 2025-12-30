@@ -89,6 +89,27 @@ def add():
     
     return redirect(url_for("index"))
 
+@app.post("/stock/<int:pid>/<string:action>")
+def stock_adjust(pid: int, action: str):
+    with get_conn() as conn:
+        # Traer stock actual
+        row = conn.execute("SELECT stock FROM products WHERE id = ?", (pid,)).fetchone()
+        if row is None:
+            return redirect(url_for("index"))
+
+        stock = int(row["stock"])
+
+        if action == "inc":
+            stock += 1
+        elif action == "dec":
+            stock = max(0, stock - 1)  # nunca negativo
+
+        conn.execute("UPDATE products SET stock = ? WHERE id = ?", (stock, pid))
+        conn.commit()
+
+    return redirect(url_for("index"))
+
+
 @app.post("/delete/<int:pid>")
 def delete(pid: int):
     with get_conn() as conn:

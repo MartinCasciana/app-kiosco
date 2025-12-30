@@ -136,7 +136,19 @@
             {{ (m * 100) | round(0) }}%
           </td>
 
-          <td class="right">{{ p["stock"] }}</td>
+          <td class="right">
+            <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+              <form method="post" action="/stock/{{ p['id'] }}/dec" style="margin:0;">
+                <button type="submit">-1</button>
+              </form>
+
+              <strong>{{ p["stock"] }}</strong>
+
+              <form method="post" action="/stock/{{ p['id'] }}/inc" style="margin:0;">
+                <button type="submit">+1</button>
+              </form>
+            </div>
+          </td>
           <td class="right">{{ p["min_stock"] }}</td>
 
           <td class="right">{{ "%.2f"|format(p["sale"]) }}</td>
