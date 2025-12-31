@@ -107,7 +107,10 @@ def stock_adjust(pid: int, action: str):
         conn.execute("UPDATE products SET stock = ? WHERE id = ?", (stock, pid))
         conn.commit()
 
-    return redirect(url_for("index"))
+        q = (request.args.get("q") or "").strip()
+        cat = (request.args.get("cat") or "").strip()
+
+    return redirect(url_for("index", q=q, cat=cat))
 
 
 @app.post("/delete/<int:pid>")

@@ -138,13 +138,17 @@
 
           <td class="right">
             <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
-              <form method="post" action="/stock/{{ p['id'] }}/dec" style="margin:0;">
+              <form method="post"
+                    action="{{ url_for('stock_adjust', pid=p['id'], action='dec', q=q, cat=cat) }}"
+                    style="margin:0;">
                 <button type="submit">-1</button>
               </form>
 
               <strong>{{ p["stock"] }}</strong>
 
-              <form method="post" action="/stock/{{ p['id'] }}/inc" style="margin:0;">
+              <form method="post"
+                    action="{{ url_for('stock_adjust', pid=p['id'], action='inc', q=q, cat=cat) }}"
+                    style="margin:0;">
                 <button type="submit">+1</button>
               </form>
             </div>
