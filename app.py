@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from db import init_db, get_conn
-import math
+import math, json
+from pathlib import Path
 
 
 app = Flask(__name__)
@@ -16,12 +17,32 @@ CATEGORY_MARGINS = {
     "Varios": 0.40
 }
 
+CONFIG_PATH = Path("config.json")
+DEFAULT_ROUNDING_STEP = 10  # 10 pesos por defecto
+
+def get_rounding_step() -> int:
+    if CONFIG_PATH.exists():
+        try:
+            data = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+            step = int(data.get("rounding_step", DEFAULT_ROUNDING_STEP))
+            if step in (10, 50, 100):
+                return step
+        except:
+            pass
+    return DEFAULT_ROUNDING_STEP
+
+def set_rounding_step(step: int) -> None:
+    step = int(step)
+    if step not in (10, 50, 100):
+        step = DEFAULT_ROUNDING_STEP
+    CONFIG_PATH.write_text(json.dumps({"rounding_step": step}, indent=2), encoding="utf-8")
+
+
 def calcular_precio_venta(precio_compra: float, categoria: str) -> float:
-    
     margen = CATEGORY_MARGINS.get(categoria, 0.40)
     venta = precio_compra * (1 + margen)
-    venta_redondeada = redondear_precio(venta, paso=10)
-    return venta_redondeada
+    paso = get_rounding_step()
+    return redondear_precio(venta, paso=paso)
 
 def redondear_precio(precio: float, paso: int = 10) -> float:
     """
