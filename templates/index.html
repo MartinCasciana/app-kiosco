@@ -159,9 +159,15 @@
           <td class="right">{{ "%.2f"|format(p["sale"] - p["cost"]) }}</td>
 
           <td class="right">
-            <form method="post" action="/delete/{{ p['id'] }}" style="margin:0;">
-              <button class="danger" type="submit">Borrar</button>
-            </form>
+              <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <a href="{{ url_for('edit', pid=p['id'], q=q, cat=cat) }}" style="text-decoration:none;">
+                  <button type="button">Edit</button>
+                </a>
+
+                <form method="post" action="/delete/{{ p['id'] }}" style="margin:0;">
+                  <button class="danger" type="submit">Borrar</button>
+                </form>
+              </div>
           </td>
         </tr>
       {% endfor %}

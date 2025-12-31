@@ -120,10 +120,6 @@ def delete(pid: int):
         conn.commit()
     return redirect(url_for("index"))
 
-if __name__ == "__main__":
-    init_db()
-    app.run(debug=True)
-
 @app.get("/edit/<int:pid>")
 def edit(pid: int):
     q = (request.args.get("q") or "").strip()
@@ -172,4 +168,9 @@ def update(pid: int):
         conn.commit()
 
     return redirect(url_for("index", q=q, cat=cat))
+
+if __name__ == "__main__":
+    init_db()
+    app.run(debug=True)
+
 
