@@ -124,3 +124,52 @@ if __name__ == "__main__":
     init_db()
     app.run(debug=True)
 
+@app.get("/edit/<int:pid>")
+def edit(pid: int):
+    q = (request.args.get("q") or "").strip()
+    cat = (request.args.get("cat") or "").strip()
+
+    with get_conn() as conn:
+        p = conn.execute("SELECT * FROM products WHERE id = ?", (pid,)).fetchone()
+
+    if p is None:
+        return redirect(url_for("index", q=q, cat=cat))
+
+    return render_template(
+        "edit.html",
+        p=p,
+        categories=list(CATEGORY_MARGINS.keys()),
+        category_margins=CATEGORY_MARGINS,
+        q=q,
+        cat=cat
+    )
+
+@app.post("/update/<int:pid>")
+def update(pid: int):
+    q = (request.args.get("q") or "").strip()
+    cat = (request.args.get("cat") or "").strip()
+
+    nombre = request.form["name"].strip()
+    categoria = request.form["category"].strip()
+    precio_compra = float(request.form["cost"])
+    stock = int(request.form.get("stock", 0) or 0)
+    min_stock = int(request.form.get("min_stock", 0) or 0)
+
+    if categoria not in CATEGORY_MARGINS:
+        categoria = "Varios"
+
+    precio_venta = calcular_precio_venta(precio_compra, categoria)
+
+    with get_conn() as conn:
+        conn.execute(
+            """
+            UPDATE products
+            SET name = ?, category = ?, cost = ?, sale = ?, stock = ?, min_stock = ?
+            WHERE id = ?
+            """,
+            (nombre, categoria, precio_compra, precio_venta, stock, min_stock, pid)
+        )
+        conn.commit()
+
+    return redirect(url_for("index", q=q, cat=cat))
+
